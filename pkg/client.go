@@ -156,7 +156,7 @@ func (c *OIDCClient) oauthCallback(w http.ResponseWriter, r *http.Request) {
 	if c.doRefreshChecks {
 		// force token expiry
 		oauth2Token.Expiry = time.Now()
-		ts := c.config.TokenSource(r.Context(), oauth2Token)
+		ts := c.config.TokenSource(c.ctx, oauth2Token)
 		refresh, err := ts.Token()
 		if err != nil {
 			log.WithError(err).Warning("Failed to refresh token")
