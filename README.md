@@ -26,6 +26,7 @@ This tool is full configured using environment variables.
 - `OIDC_DO_INTROSPECTION`: Whether introspection related checks are enabled (don't call introspection endpoint) (default: true)
 - `OIDC_DO_USER_INFO`: Whether user-info related checks are enabled (don't use userinfo endpoint) (default: true)
 - `OIDC_TLS_VERIFY`: Whether to verify TLS certicates (set to "false" for self-signed) (default: true)
+- `OIDC_SCOPES`: Space separated list of scopes to request (default: "openid offline_access profile email")
 
 ## Running
 

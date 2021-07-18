@@ -50,6 +50,9 @@ func NewOIDCClient(clientID string, clientSecret string, providerURL string) *OI
 		ctx = context.Background()
 	}
 
+	sc := Env("OIDC_SCOPES", "openid offline_access profile email")
+	scopes := strings.Split(sc, " ")
+
 	provider, err := oidc.NewProvider(ctx, providerURL)
 	if err != nil {
 		log.Fatal(err)
@@ -62,7 +65,7 @@ func NewOIDCClient(clientID string, clientSecret string, providerURL string) *OI
 		ClientSecret: clientSecret,
 		Endpoint:     provider.Endpoint(),
 		RedirectURL:  fmt.Sprintf("%s/auth/callback", rootURL),
-		Scopes:       []string{oidc.ScopeOpenID, oidc.ScopeOfflineAccess, "profile", "email"},
+		Scopes:       scopes,
 	}
 
 	client := OIDCClient{
