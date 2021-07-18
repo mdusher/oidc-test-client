@@ -1,0 +1,15 @@
+version: '3.5'
+
+services:
+  oidc-test-client:
+    image: ghcr.io/beryju/oidc-test-client
+    build:
+        context: .
+        dockerfile: Dockerfile
+    network_mode: host
+    ports:
+      - 9009:9009
+    environment:
+      OIDC_CLIENT_ID: test-id
+      OIDC_CLIENT_SECRET: test-secret
+      OIDC_PROVIDER: https://some.issuer.tld/
