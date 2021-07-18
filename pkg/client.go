@@ -90,14 +90,14 @@ func (c *OIDCClient) oauthCallback(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Query().Get("state") != session.Values["state"] {
 		log.Error("state did not match")
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Error(w, "state did not match", http.StatusInternalServerError)
 		return
 	}
 
 	oauth2Token, err := c.config.Exchange(c.ctx, r.URL.Query().Get("code"))
 	if err != nil {
 		log.WithError(err).Error("Failed to exchange token")
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -106,13 +106,13 @@ func (c *OIDCClient) oauthCallback(w http.ResponseWriter, r *http.Request) {
 	rawIDToken, ok := oauth2Token.Extra("id_token").(string)
 	if !ok {
 		log.Error("No id_token field in oauth2 token.")
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	idToken, err := c.verifier.Verify(c.ctx, rawIDToken)
 	if err != nil {
 		log.WithError(err).Error("Failed to verify ID Token")
-		http.Redirect(w, r, "/", http.StatusFound)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -132,7 +132,7 @@ func (c *OIDCClient) oauthCallback(w http.ResponseWriter, r *http.Request) {
 		userInfo, err := c.provider.UserInfo(c.ctx, tokenSource)
 		if err != nil {
 			log.WithError(err).Error("Failed to get userinfo")
-			http.Redirect(w, r, "/", http.StatusFound)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -146,7 +146,7 @@ func (c *OIDCClient) oauthCallback(w http.ResponseWriter, r *http.Request) {
 		introspection, err := c.oauthTokenIntrospection(tokenSource)
 		if err != nil {
 			log.WithError(err).Error("Failed to do token introspection")
-			http.Redirect(w, r, "/", http.StatusFound)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		resp.Introspection = introspection
@@ -160,18 +160,20 @@ func (c *OIDCClient) oauthCallback(w http.ResponseWriter, r *http.Request) {
 		refresh, err := ts.Token()
 		if err != nil {
 			log.WithError(err).Warning("Failed to refresh token")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		refreshRawIDToken, ok := refresh.Extra("id_token").(string)
 		if !ok {
 			log.Warning("No id_token field in refresh oauth2 token.")
-			http.Redirect(w, r, "/", http.StatusFound)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		refreshIDToken, err := c.verifier.Verify(c.ctx, refreshRawIDToken)
 		if err != nil {
 			log.WithError(err).Warning("Failed to verify ID Token in refresh token")
-			http.Redirect(w, r, "/", http.StatusFound)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		resp.Refresh = refresh
