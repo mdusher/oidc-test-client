@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -35,7 +36,19 @@ type OIDCClient struct {
 }
 
 func NewOIDCClient(clientID string, clientSecret string, providerURL string) *OIDCClient {
-	ctx := context.Background()
+
+	var ctx context.Context
+
+	tlsVerify := Env("OIDC_TLS_VERIFY", "true")
+	if tlsVerify != "true" {
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		httpClient := &http.Client{Transport: tr}
+		ctx = oidc.ClientContext(context.Background(), httpClient)
+	} else {
+		ctx = context.Background()
+	}
 
 	provider, err := oidc.NewProvider(ctx, providerURL)
 	if err != nil {
