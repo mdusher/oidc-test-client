@@ -37,6 +37,10 @@ func (c *OIDCClient) oauthTokenIntrospection(tokenSource oauth2.TokenSource) (in
 	form := url.Values{}
 	form.Add("token", token.AccessToken)
 
+	if ec.IntrospectionEndpoint == "" {
+		return nil, fmt.Errorf("oidc: no introspection endpoint")
+	}
+
 	req, err := http.NewRequest("POST", ec.IntrospectionEndpoint, strings.NewReader(form.Encode()))
 	if err != nil {
 		return nil, err
