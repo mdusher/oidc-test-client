@@ -1,4 +1,4 @@
-FROM golang:latest AS builder
+FROM golang:1.16-alpine AS builder
 WORKDIR $GOPATH/src/github.com/BeryJu/oidc-test-client
 COPY . .
 ENV CGO_ENABLED=0
