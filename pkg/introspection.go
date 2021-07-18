@@ -13,9 +13,11 @@ import (
 )
 
 func doRequest(ctx context.Context, req *http.Request) (*http.Response, error) {
-	client := http.DefaultClient
+	var client *http.Client
 	if c, ok := ctx.Value(oauth2.HTTPClient).(*http.Client); ok {
 		client = c
+	} else {
+		client = http.DefaultClient
 	}
 	return client.Do(req.WithContext(ctx))
 }
